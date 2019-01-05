@@ -1,8 +1,16 @@
+import math
 import pandas as pd
+import requests
+import sys
+from bs4 import BeautifulSoup
 
-df = pd.read_csv('./data/turnstile_data.csv')
-stations = df.station.unique()
+# Read in turnstile data
+turnstile_df = pd.read_csv('./data/turnstile_data.csv')
+# Get all unique MBTA station names for which we have turnstile data
+stations = turnstile_df.station.unique()
 
+# Create dictionary consisting of latitude and longitude coordinates
+# Coordinates from 
 coords = {'Andrew Square' : '42.33195 -71.05721',
          'JFK/U Mass' : '42.32060 -71.05237',
          'North Quincy' : '42.27581 -71.03017',
@@ -66,3 +74,66 @@ coords = {'Andrew Square' : '42.33195 -71.05721',
          'Courthouse' : '42.35226 -71.04690',
          'World Trade Center' : '42.34873 -71.04227',
          'Charles MGH' : '42.36122 -71.07054'}
+
+zip_pop = {}
+zip_lat = {}
+zip_lon = {}
+
+# Get all Suffolk County (i.e. Boston) zip codes
+page = requests.get('https://www.zip-codes.com/city/ma-boston.asp#zipcodes')
+if page.status_code == 200:
+    soup = BeautifulSoup(page.content, 'html.parser')
+    rows = soup.find('table', {'id' : 'tblZIP'}).find_all('tr')
+    for i in range(1, len(rows)):
+        zipcode = str(rows[i].find('td').get_text('title').split(' ')[2])
+        pop = int(rows[i].find_all('td')[3].get_text('td').replace(',', ''))
+        zip_url = 'https://www.zip-codes.com/zip-code/' + zipcode + 'zip-code-' + zipcode + '.asp'
+        zip_page = requests.get(zip_url)
+        if page.status_code == 200:
+            zip_soup = BeautifulSoup(zip_page.content, 'html.parser')
+            anomaly = 0
+            try:
+                latitude = float(zip_soup.find_all('tr')[12].find_all('td')[1].get_text())
+            except:
+                latitude = float(zip_soup.find_all('tr')[13].find_all('td')[1].get_text())
+                print(zipcode, ' anomaly')
+                anomaly = 1
+            if anomaly == 0:
+                longitude = float(zip_soup.find_all('tr')[13].find_all('td')[1].get_text())
+            else:
+                longitude = float(zip_soup.find_all('tr')[14].find_all('td')[1].get_text())
+            zip_pop[zipcode] = pop
+            zip_lat[zipcode] = latitude
+            zip_lon[zipcode] = longitude
+        else:
+            sys.exit('Error: page not found for zip code ' + zipcode + '.')
+        anomaly = 0
+    
+else:
+    sys.exit('Error: Zip Code page status code is not 200.')
+
+# Initialize dictionaries for latitude and longitude
+lat = {}
+lon = {}
+
+# Splice coords dicttionary into a latitude dictionary and a longitude dictionary
+for key in coords:
+    lat[key] = float(coords[key].split(" ")[0])
+    lon[key] = float(coords[key].split(" ")[1])
+    
+# Instantiate distance matrix
+distance = pd.DataFrame(columns=list(stations), index=list(stations))
+
+# Fill in distance matrix with Euclidean distances between stations
+for i in range(len(stations)):
+    for j in range(i+1, len(stations)):
+        lat_dist = lat[stations[i]] - lat[stations[j]]
+        lon_dist = lon[stations[i]] - lon[stations[j]]
+        # Compute distance
+        dist = math.sqrt((lat_dist**2) + (lon_dist**2))
+        distance.loc[stations[i]][stations[j]] = dist
+        distance.loc[stations[j]][stations[i]] = dist
+
+# Add zeros along horizontal of matrix
+for i in range(len(distance)):
+    distance.iloc[i][i] = 0.0

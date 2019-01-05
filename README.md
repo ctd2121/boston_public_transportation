@@ -3,4 +3,6 @@ Developing an origin-destination matrix using conventional techniques and compar
 
 MBTA turnstile data obtained from https://github.com/mbtaviz/mbtaviz.github.io/
 
-Longitude and latitude coordinate data obtained from https://latitude.to
+Latitude and longitude coordinate data obtained from https://latitude.to
+
+Zip code to coordinate data obtained from https://www.zip-codes.com
