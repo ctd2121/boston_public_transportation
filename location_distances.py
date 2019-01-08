@@ -81,4 +81,4 @@ def zip_closest_stations(station_zip_dist):
                 closest_station = station_zip_dist[station_zip_dist[zip_cols[i]]==min_dist].index.item()
                 # Update zip_closest_station dictionary
                 zip_closest_station[zip_cols[i]] = closest_station
-    return zip_closest_station
+    return zip_closest_station    
