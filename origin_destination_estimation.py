@@ -1,4 +1,5 @@
 import math
+import numpy as np
 import pandas as pd
 import requests
 import sys
@@ -75,7 +76,6 @@ def get_station_coords():
         lat: a dictionary with MBTA station keys and latitude coordinate values
         lon: a dictionary with MBTA station keys and longitude coordinate values
     '''
-    
     # Create dictionary consisting of latitude and longitude coordinates
     # Coordinates manually obtained from https://www.zip-codes.com
     coords = {'Andrew Square' : '42.33195 -71.05721',
@@ -212,8 +212,28 @@ def zip_station_matrix(zip_lat, zip_lon, station_lat, station_lon):
             distance.loc[stations[j]][zips[i]] = dist
 
     return distance
-    
 
+def zip_closest_stations(station_zip_dist):
+    '''
+    Computes the nearest MBTA station for residents of each zip code.
+    Args:
+        station_zip_dist: a dataframe denoting the distances between all stations and all zip codes
+    Returns:
+        zip_closest_station: a dictionary with zip code keys and station values
+    '''
+    zip_closest_station = {} # Initialize dictionary
+    zip_cols = station_zip_dist.columns # Get list of all zip codes
+    for i in range(station_zip_dist.shape[1]): # For every column in dataframe
+        min_dist = 10 # Initialize min_dist to an arbitrarily large value
+        for j in range(station_zip_dist.shape[0]): # For every row in dataframe
+            if station_zip_dist.iloc[j][i] < min_dist: # If distance from zip code to station is less than min_dist
+                min_dist = station_zip_dist.iloc[j][i] # Set min_dist to this minimum value
+                # Get the name of the station (row) that corresponds to min_dist
+                closest_station = station_zip_dist[station_zip_dist[zip_cols[i]]==min_dist].index.item()
+                # Update zip_closest_station dictionary
+                zip_closest_station[zip_cols[i]] = closest_station
+    return zip_closest_station
+    
 if __name__ == '__main__':
     # Read in turnstile data
     turnstile_df = pd.read_csv('./data/turnstile_data.csv')
@@ -224,3 +244,4 @@ if __name__ == '__main__':
     station_lat, station_lon = get_station_coords()
     station_distances = station_dist_matrix(stations, station_lat, station_lon)
     station_zip_dist = zip_station_matrix(zip_lat, zip_lon, station_lat, station_lon)
+    zip_closest_station = zip_closest_stations(station_zip_dist)
