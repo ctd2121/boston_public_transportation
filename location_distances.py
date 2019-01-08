@@ -1,4 +1,3 @@
-import coordinate_locations
 import math
 import numpy as np
 import pandas as pd
@@ -83,15 +82,3 @@ def zip_closest_stations(station_zip_dist):
                 # Update zip_closest_station dictionary
                 zip_closest_station[zip_cols[i]] = closest_station
     return zip_closest_station
-
-if __name__ == '__main__':
-    # Read in turnstile data
-    turnstile_df = pd.read_csv('./data/turnstile_data.csv')
-    # Get all unique MBTA station names for which we have turnstile data
-    stations = turnstile_df.station.unique()
-    
-    zip_pop, zip_lat, zip_lon = coordinate_locations.get_zip_coords()
-    station_lat, station_lon = coordinate_locations.get_station_coords()
-    station_distances = station_dist_matrix(stations, station_lat, station_lon)
-    station_zip_dist = zip_station_matrix(zip_lat, zip_lon, station_lat, station_lon)
-    zip_closest_station = zip_closest_stations(station_zip_dist)
