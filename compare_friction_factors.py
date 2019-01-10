@@ -5,8 +5,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-%matplotlib inline
-
 
 def visualize_results(friction_factor_comparison_norm):
     '''
