@@ -82,3 +82,44 @@ def zip_closest_stations(station_zip_dist):
                 # Update zip_closest_station dictionary
                 zip_closest_station[zip_cols[i]] = closest_station
     return zip_closest_station    
+
+def station_popularities(zip_closest_station, zip_pop):
+    '''
+    Computes the popularity of all subway stations, based on the populations of surrounding neighborhoods.
+    This function "reverses" the zip_closest_station; that is, values become keys and keys become values,
+    ensuring that no duplicates are produced.
+    Args:
+        zip_closest_station: a dictionary with zip code keys and station values
+        zip_pop: a dictionary with zip code keys and population values
+    Returns:
+        unique_stations: an array containing all the unique MBTA stations for which the sum of populations of
+        its corresponding zip code neighborhoods is nonzero
+        station_popularity: a dictionary with station keys and the sum of the populations of all zip codes to 
+        which this station is closest
+    '''
+    # Initialize station_popularity dictionary
+    station_popularity = {}
+    # Initialize array that consists of all the unique MBTA stations
+    unique_stations = []
+    
+    # For all zip codes in zip_closest_station dictionary
+    for zip_code in zip_closest_station:
+        # Retrieve the MBTA station that this zip code neighborhood is closest to
+        station = zip_closest_station[zip_code]
+        # If the station is not already a key in the station_popularity dictionary
+        if station not in station_popularity:
+            # Add it as a key with value equal to the population of the zip code neighborhood
+            station_popularity[station] = zip_pop[zip_code]
+            # Append station name to unique_stations array
+            unique_stations.append(station)
+        # If the station is already a key in the station_popularity dictionary
+        else:
+            # Increment the dictionary value by the population of the zip code neighborhood
+            station_popularity[station] = station_popularity[station] + zip_pop[zip_code]
+    
+    return unique_stations, station_popularity
+    
+    
+    
+    
+    
