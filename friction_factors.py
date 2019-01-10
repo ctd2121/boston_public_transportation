@@ -1,5 +1,13 @@
 import pandas as pd
 
+def normalize(dataset):
+    '''
+    A utility function that normalizes all values in a dataset.
+    Originally from https://www.kaggle.com/parasjindal96/how-to-normalize-dataframe-pandas
+    '''
+    dataNorm=((dataset-dataset.min())/(dataset.max()-dataset.min()))*20
+    return dataNorm
+
 def consolidate_turnstile_data(turnstile_df, unique_stations):
     '''
     Reads in raw turnstile_data.csv file and formats it in a way that facilitates analysis
@@ -54,8 +62,8 @@ def compute_factor_estimates(unique_stations, station_popularity, station_distan
             # in this direction
             friction_estimates.iloc[i][j] = fric_factor
 
-    # For analysis purposes, multiply all values by 100
-    friction_estimates = friction_estimates * 100
+    # For analysis purposes, normalize all values in the dataframe
+    friction_estimates = normalize(friction_estimates)
     
     return friction_estimates
 
@@ -89,12 +97,14 @@ def compute_factor_actuals(turnstile_df, unique_stations, station_distances):
             # Enter the friction factor into the appropriate position in the dataframe
             friction_actuals.iloc[i][j] = fric_factor
     
-    # For analysis purposes, multiply all values by 100
-    friction_actuals = friction_actuals * 100
+    # For analysis purposes, normalize all values in the dataframe
+    friction_actuals = normalize(friction_actuals)
     
     return friction_actuals
 
-def compare_factors(friction_factor_estimates, friction_factor_actuals, unique_stations):
+def compare_factors(friction_factor_estimates,
+                    friction_factor_actuals,
+                    unique_stations):
     '''
     Compares the estimated friction factors that were based on scraped population data versus those calibrated based on actual
     MBTA station turnstile data.
@@ -105,6 +115,7 @@ def compare_factors(friction_factor_estimates, friction_factor_actuals, unique_s
     Returns:
         friction_ratios: a dataframe that is the same size as friction_factor_estimates and friction_factor_actuals, holding respective
         ratios between actual values and estimated factors
+        friction_ratios_norm: a normalized version of friction_ratios
     '''
     # Instantiate a pandas dataframe that will hold ratios of actual friction factors to estimated friction factors
     friction_ratios = pd.DataFrame(columns=list(unique_stations), index=list(unique_stations))
@@ -120,7 +131,11 @@ def compare_factors(friction_factor_estimates, friction_factor_actuals, unique_s
                 value = 0.0 # Coerce value to be zero
             # Add value as entry into friction_ratios dataframe
             friction_ratios.iloc[i][j] = value
-    return friction_ratios
+    
+    # Normalize all values in the dataframe
+    friction_ratios_norm = friction_ratios
+    
+    return friction_ratios_norm
 
 
 

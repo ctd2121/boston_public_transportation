@@ -1,7 +1,30 @@
 import coordinate_locations as cl
 import friction_factors as ff
 import location_distances as ld
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import seaborn as sns
+%matplotlib inline
+
+
+def visualize_results(friction_factor_comparison_norm):
+    '''
+    Displays a heatmap of friction factor comparisons between actual factors and estimated factors.
+    Args:
+        friction_factor_comparison_norm: a pandas dataframe, each entry in which represents a friction factor between two MBTA stations
+    '''    
+    # Visualize comparison of actual to estimated friction factors as a heatmap
+    # Fill NAs (the only updated cell is the blank top left corner, which is considered to be NA by pandas)
+    friction_factor_comparison_norm.fillna(value=np.nan, inplace=True)
+    # View heatmap
+    ax = sns.heatmap(friction_factor_comparison_norm,
+                cmap='RdYlGn_r',
+                linewidths=0.5,
+                annot=False)
+    ax.invert_yaxis() # Reverse order of y-axis for visual simplicity
+    ax.set_title('MBTA Station Friction Factors: Normalized Comparison')
+    plt.show()
 
 if __name__ == '__main__':
     # Read in turnstile data
@@ -31,5 +54,9 @@ if __name__ == '__main__':
     friction_factor_actuals = ff.compute_factor_actuals(turnstile_df, unique_stations, station_distances)
     # Save friction factors to CSV file for easy reference
     friction_factor_estimates.to_csv('./friction_factors/actual_factors.csv')
-
-    friction_factor_comparison = ff.compare_factors(friction_factor_estimates, friction_factor_actuals, unique_stations)
+    
+    # Generate a dataframe that displays a comparison (in ratios) of actual versus estimated friction factors
+    friction_factor_comparison_norm = ff.compare_factors(friction_factor_estimates, friction_factor_actuals, unique_stations)
+    
+    # Visualize results using heatmaps
+    visualize_results(friction_factor_comparison_norm)
