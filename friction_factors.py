@@ -1,9 +1,5 @@
 import pandas as pd
 
-def normalize(dataset):
-    dataNorm=((dataset-dataset.min())/(dataset.max()-dataset.min()))
-    return dataNorm
-
 def consolidate_turnstile_data(turnstile_df, unique_stations):
     '''
     Reads in raw turnstile_data.csv file and formats it in a way that facilitates analysis
