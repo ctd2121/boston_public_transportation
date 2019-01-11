@@ -11,12 +11,12 @@ def get_zip_coords():
         zip_lat: a dictionary with zip code keys and latitude coordinate values
         zip_lon: a dictionary with zip code keys and longitude coordinate values
     '''
-    # Initialize dictionaries that hold informative values by zip code
+    # Initialize dictionaries that hold population, latitude, and longitude values by zip code, respectively
     zip_pop = {}
     zip_lat = {}
     zip_lon = {}
     
-    # Initialize the web page containing the desired data
+    # Initialize the web page that contains the desired data
     page = requests.get('https://www.zip-codes.com/city/ma-boston.asp#zipcodes')
     
     # Confirm web page is successfully obtained
@@ -50,7 +50,7 @@ def get_zip_coords():
                     # Get longitude data in slightly different location if zip code is flagged as an anomaly
                     longitude = float(zip_soup.find_all('tr')[14].find_all('td')[1].get_text())
                 
-                # If population is nonzero, add population, latitude, and longitude of each zip code to respective dictionaries
+                # If population is nonzero, add population, latitude, and longitude of zip code to respective dictionaries
                 if pop > 0:
                     zip_pop[zipcode] = pop
                     zip_lat[zipcode] = latitude
@@ -70,7 +70,7 @@ def get_zip_coords():
 
 def get_station_coords():
     '''
-    Gets latitude, longitude coordinates for all MBTA stations that are included in turnstile_data.csv
+    Retrieves latitude, longitude coordinates for all MBTA stations that are included in turnstile_data.csv
     Returns:
         lat: a dictionary with MBTA station keys and latitude coordinate values
         lon: a dictionary with MBTA station keys and longitude coordinate values
@@ -145,7 +145,7 @@ def get_station_coords():
     lat = {}
     lon = {}
     
-    # Splice coords into latitude and longitude
+    # Splice coords object into latitude and longitude
     for key in coords:
         lat[key] = float(coords[key].split(" ")[0])
         lon[key] = float(coords[key].split(" ")[1])
