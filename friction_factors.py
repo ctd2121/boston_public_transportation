@@ -1,5 +1,9 @@
 import pandas as pd
 
+def normalize(dataset):
+    dataNorm=((dataset-dataset.min())/(dataset.max()-dataset.min()))
+    return dataNorm
+
 def consolidate_turnstile_data(turnstile_df, unique_stations):
     '''
     Reads in raw turnstile_data.csv file and formats it in a way that facilitates analysis
@@ -117,7 +121,7 @@ def compare_factors(friction_factor_estimates,
                 value = 0.0 # Coerce the result to be zero
             # Add value as entry into friction_ratios dataframe
             friction_ratios.iloc[i][j] = value
-
+    
     return friction_ratios
 
 
