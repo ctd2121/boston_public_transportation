@@ -1,13 +1,5 @@
 import pandas as pd
 
-def normalize(dataset):
-    '''
-    A utility function that normalizes all values in a dataset.
-    Originally from https://www.kaggle.com/parasjindal96/how-to-normalize-dataframe-pandas
-    '''
-    dataNorm=((dataset-dataset.min())/(dataset.max()-dataset.min()))
-    return dataNorm
-
 def consolidate_turnstile_data(turnstile_df, unique_stations):
     '''
     Reads in raw turnstile_data.csv file and formats it in a way that facilitates analysis
@@ -41,7 +33,7 @@ def compute_factor_estimates(unique_stations, station_popularity, station_distan
         station_popularity: a dictionary with station keys and values equal to the sum of its nearby zip code neighborhoods
         station_distances: a pandas dataframe/matrix holding the distances between all MBTA stations that exist in the unique_stations array
     Returns:
-        friction_estimates: a pandas dataframe/matrix holding the normalized friction factors between all MBTA stations in the unique_stations
+        friction_estimates: a pandas dataframe/matrix holding the friction factors between all MBTA stations in the unique_stations
         array
     '''
     # Initialize dataframe friction_estimates, with MBTA stations as both indices and column names
@@ -52,17 +44,16 @@ def compute_factor_estimates(unique_stations, station_popularity, station_distan
     for i in range(len(friction_estimates)): # For every row in friction_estimates dataframe
         for j in range(len(friction_estimates)): # For every column in friction_estimates dataframe
             # Compute the friction factor between station i and station j
-            # Get the ratio of station popularities = (station i popularity) / (station j popularity)
-            pop_ratio = float(station_popularity[friction_estimates.index[i]]) / float(station_popularity[friction_estimates.columns[j]])
+            # Get the product of station popularities = (station i popularity) * (station j popularity)
+            pop_product = float(station_popularity[friction_estimates.index[i]]) * float(station_popularity[friction_estimates.columns[j]])
             
-            # Multiply pop_ratio by the Euclidean coordinate distance between station i and station j
-            fric_factor = float(pop_ratio) * float(station_distances.loc[friction_estimates.index[i]][friction_estimates.columns[j]])
-            
+            # Multiply pop_product by the Euclidean coordinate distance between station i and station j
+            try:
+                fric_factor = float(pop_product) / float(station_distances.loc[friction_estimates.index[i]][friction_estimates.columns[j]])
+            except:
+                fric_factor = 0
             # Enter the friction factor into the appropriate position in the dataframe
             friction_estimates.iloc[i][j] = fric_factor
-
-    # For analysis purposes, normalize all values in the dataframe
-    friction_estimates = normalize(friction_estimates)
     
     return friction_estimates
 
@@ -74,7 +65,7 @@ def compute_factor_actuals(turnstile_df, unique_stations, station_distances):
         unique_stations: an array consisting of all the unique MBTA stations for which data was scraped
         station_distances: a pandas dataframe/matrix indicating the Euclidean coordinate distances between MBTA stations
     Returns:
-        friction_actuals: a pandas dataframe/matrix holding normalized friction factors between MBTA stations based on actual turnstile data
+        friction_actuals: a pandas dataframe/matrix holding friction factors between MBTA stations based on actual turnstile data
     '''
     # Call function that aggregates data into a simple form
     df = consolidate_turnstile_data(turnstile_df, unique_stations)
@@ -88,17 +79,16 @@ def compute_factor_actuals(turnstile_df, unique_stations, station_distances):
     for i in range(len(friction_actuals)): # For every row i in friction_actuals dataframe
         for j in range(len(friction_actuals)): # For every column j in friction_actuals dataframe
             # Compute friction factor between station i and station j
-            # Get the ratio of (station i entrances) / (station j exits)
-            enter_exit_ratio = float(df.loc[friction_actuals.index[i]]['entries']) / float(df.loc[friction_actuals.columns[j]]['exits'])
+            # Get the product of (station i entrances) * (station j exits)
+            enter_exit_product = float(df.loc[friction_actuals.index[i]]['entries']) * float(df.loc[friction_actuals.columns[j]]['exits'])
     
-            # Multiply enter_exit_ratio by the distance between station i and station j
-            fric_factor = float(enter_exit_ratio) * float(station_distances.loc[friction_actuals.index[i]][friction_actuals.columns[j]])
-            
+            # Multiply enter_exit_product by the distance between station i and station j
+            try:
+                fric_factor = float(enter_exit_product) / float(station_distances.loc[friction_actuals.index[i]][friction_actuals.columns[j]])
+            except:
+                fric_factor = 0
             # Enter the friction factor into the appropriate position in the dataframe
             friction_actuals.iloc[i][j] = fric_factor
-    
-    # For analysis purposes, normalize all values in the dataframe
-    friction_actuals = normalize(friction_actuals)
     
     return friction_actuals
 
@@ -113,10 +103,9 @@ def compare_factors(friction_factor_estimates,
         friction_factor_actuals: a pandas dataframe/matrix holding friction factors between MBTA stations based on actual turnstile data
         unique_stations: an array holding all MBTA stations for which data was scraped
     Returns:
-        friction_ratios: a pandas dataframe/matrix holding ratios between normalized friction factor actuals to normalized friction
-        factor estimates
+        friction_ratios: a pandas dataframe/matrix holding ratios between friction factor actuals to friction factor estimates
     '''
-    # Initialize a pandas dataframe that will hold ratios of normalized actual friction factors to normalized estimated friction factors
+    # Initialize a pandas dataframe that will hold ratios of actual friction factors to estimated friction factors
     friction_ratios = pd.DataFrame(columns=list(unique_stations), index=list(unique_stations))
     
     for i in range(len(unique_stations)): # For every row in the friction_ratios dataframe

@@ -8,11 +8,11 @@ import seaborn as sns
 
 def visualize_results(friction_factor_comparison):
     '''
-    Displays a heatmap of friction factor comparisons between normalized actual factors and normalized estimated factors.
+    Displays a heatmap of friction factor comparisons between actual factors and estimated factors.
     Args:
         friction_factor_comparison: a pandas dataframe, in which each entry represents the friction factor between two MBTA stations
     '''    
-    # Visualize comparison of normalized actual to normalized estimated friction factors as a heatmap
+    # Visualize comparison of actual to estimated friction factors as a heatmap
     # Fill NAs (the only cell this line of code modifies is the top left corner cell, which is considered to be NA by pandas because it is blank)
     friction_factor_comparison.fillna(value=np.nan, inplace=True)
     # View heatmap
@@ -53,8 +53,8 @@ if __name__ == '__main__':
     # Save friction factors to CSV file for easy reference
     friction_factor_estimates.to_csv('./friction_factors/actual_factors.csv')
     
-    # Generate a dataframe that displays a comparison (in ratios) of normalized actual versus normalized estimated friction factors
-    friction_factor_comparison_norm = ff.compare_factors(friction_factor_estimates, friction_factor_actuals, unique_stations)
+    # Generate a dataframe that displays a comparison (in ratios) of actual versus estimated friction factors
+    friction_factor_comparison = ff.compare_factors(friction_factor_estimates, friction_factor_actuals, unique_stations)
     
     # Call function that allows visualization of results using a heatmap
-    visualize_results(friction_factor_comparison_norm)
+    visualize_results(friction_factor_comparison)
