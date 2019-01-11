@@ -27,7 +27,7 @@ def consolidate_turnstile_data(turnstile_df, unique_stations):
     
     return turnstile_df
 
-def compute_factor_estimates(unique_stations, station_popularity, station_distances):
+def compute_factor_estimates(unique_stations, station_popularity, station_distances, total_pop):
     '''
     Computes the friction factors between all MBTA stations based on populations of nearby zip code neighborhoods and distances between
     stations.
@@ -36,6 +36,7 @@ def compute_factor_estimates(unique_stations, station_popularity, station_distan
         its corresponding zip code neighborhoods is nonzero
         station_popularity: a dictionary with station keys and values equal to the sum of its nearby zip code neighborhoods
         station_distances: a pandas dataframe/matrix holding the distances between all MBTA stations that exist in the unique_stations array
+        total_pop: the total population of our neighborhood sample
     Returns:
         friction_estimates: a pandas dataframe/matrix holding the friction factors between all MBTA stations in the unique_stations
         array
@@ -48,17 +49,18 @@ def compute_factor_estimates(unique_stations, station_popularity, station_distan
     for i in range(len(friction_estimates)): # For every row in friction_estimates dataframe
         for j in range(len(friction_estimates)): # For every column in friction_estimates dataframe
             # Compute the friction factor between station i and station j
-            # Get the product of station popularities = (station i popularity) * (station j popularity)
-            pop_product = float(station_popularity[friction_estimates.index[i]]) * float(station_popularity[friction_estimates.columns[j]])
+            # Compute the number of trips from station i times the attraction factor of station j
+            # We assume the attraction factor of station j is proportional to the population of station j's neighborhood divided by the total population of the sample
+            pop_product = float(station_popularity[friction_estimates.index[i]]) * float(station_popularity[friction_estimates.columns[j]]) / total_pop
             
-            # Multiply pop_product by the Euclidean coordinate distance between station i and station j
+            # Divide pop_product by the Euclidean coordinate distance between station i and station j
             try:
                 fric_factor = float(pop_product) / float(station_distances.loc[friction_estimates.index[i]][friction_estimates.columns[j]])
             except:
-                fric_factor = 0
+                fric_factor = 0.0
             # Enter the friction factor into the appropriate position in the dataframe
             friction_estimates.iloc[i][j] = fric_factor
-    
+
     return friction_estimates
 
 def compute_factor_actuals(turnstile_df, unique_stations, station_distances):
@@ -83,14 +85,14 @@ def compute_factor_actuals(turnstile_df, unique_stations, station_distances):
     for i in range(len(friction_actuals)): # For every row i in friction_actuals dataframe
         for j in range(len(friction_actuals)): # For every column j in friction_actuals dataframe
             # Compute friction factor between station i and station j
-            # Get the product of (station i entrances) * (station j exits)
-            enter_exit_product = float(df.loc[friction_actuals.index[i]]['entries']) * float(df.loc[friction_actuals.columns[j]]['exits'])
+            # Compute the number of entrances from station i times the number of exits from station j, divided by total number of exits
+            enter_exit_product = float(df.loc[friction_actuals.index[i]]['entries']) * float(df.loc[friction_actuals.columns[j]]['exits']) / float(df.exits.sum())
     
-            # Multiply enter_exit_product by the distance between station i and station j
+            # Divide enter_exit_product by the distance between station i and station j
             try:
                 fric_factor = float(enter_exit_product) / float(station_distances.loc[friction_actuals.index[i]][friction_actuals.columns[j]])
             except:
-                fric_factor = 0
+                fric_factor = 0.0
             # Enter the friction factor into the appropriate position in the dataframe
             friction_actuals.iloc[i][j] = fric_factor
     

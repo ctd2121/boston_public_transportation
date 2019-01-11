@@ -41,10 +41,10 @@ if __name__ == '__main__':
     # Determine the closest MBTA station to each zip code neighborhood
     zip_closest_station = ld.zip_closest_stations(ld.zip_station_matrix(zip_lat, zip_lon, station_lat, station_lon))
     # Format information that we already have into a dictionary with station keys and corresponding populations as values
-    unique_stations, station_popularity = ld.station_popularities(zip_closest_station, zip_pop)
+    unique_stations, station_popularity, total_pop = ld.station_popularities(zip_closest_station, zip_pop)
     
     # Get friction factors according to the gravity model
-    friction_factor_estimates = ff.compute_factor_estimates(unique_stations, station_popularity, station_distances)
+    friction_factor_estimates = ff.compute_factor_estimates(unique_stations, station_popularity, station_distances, total_pop)
     # Save friction factors to CSV file for easy reference
     friction_factor_estimates.to_csv('./friction_factors/estimated_factors.csv')
     

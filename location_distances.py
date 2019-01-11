@@ -99,6 +99,7 @@ def station_popularities(zip_closest_station, zip_pop):
         its corresponding zip code neighborhoods is greater than zero
         station_popularity: a dictionary with station keys and the sum of the populations of all zip codes to 
         which this station is closest
+        total_pop: the total population of our sample zip code neighborhoods
     '''
     # Initialize station_popularity dictionary
     station_popularity = {}
@@ -119,7 +120,13 @@ def station_popularities(zip_closest_station, zip_pop):
             # Increment the dictionary value by the population of the zip code neighborhood
             station_popularity[station] = station_popularity[station] + zip_pop[zip_code]
     
-    return unique_stations, station_popularity
+    # Initialize variable that will be used to compute the total population of the sample
+    total_pop = 0
+    for key in station_popularity: # For every zip code in our data with a nonzero population
+        total_pop += station_popularity[key] # Increment total_pop by the corresponding population
+        
+    
+    return unique_stations, station_popularity, float(total_pop)
     
     
     
